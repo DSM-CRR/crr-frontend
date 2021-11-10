@@ -1,12 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+import { ThreeProvider } from './libs/context/threeContext';
+
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <ThreeProvider>
+      <App />
+    </ThreeProvider>
   </React.StrictMode>,
   document.getElementById('root')
 );
