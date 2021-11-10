@@ -39,13 +39,6 @@ const Box: FC<{x?: number; y?: number; z?: number}> = ({
         state.scene.add(cube);
 
         dispatch({
-            type: "ADD_ANIMATION",
-            payload: () => {
-                // box.rotation.z += 0.02;
-                // box.rotation.y += 0.02;
-            }
-        });
-        dispatch({
             type: "ADD_MESH",
             payload: cube
         });
@@ -54,7 +47,6 @@ const Box: FC<{x?: number; y?: number; z?: number}> = ({
 
     return (
         <>
-            
         </>
     );
 }

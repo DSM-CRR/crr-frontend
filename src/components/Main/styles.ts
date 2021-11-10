@@ -1,10 +1,6 @@
 import styled from "styled-components";
 
 export const Container = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -18,6 +14,15 @@ export const Title = styled.h2`
     font-weight: 900;
     font-size: 64px;
     color: white;
+`;
+
+export const Wrapper = styled.div`
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 `;
 
 export const Button = styled.button`

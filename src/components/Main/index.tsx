@@ -4,26 +4,33 @@ import Box from '../Box';
 import Header from '../Header';
 import * as S from './styles';
 import { randomVector3Array } from '../../libs/functions'
+import useScroll from '../../libs/hook/useScroll';
 
 const data = randomVector3Array(20, [25, 15, 25], [-25, -15, -25]);
 
 const Main: FC<{}> = () => {
     const state = useThreeState();
+    const { ref: divRef, style: divStyle } = useScroll<HTMLDivElement>(.7, 0);
+    const { ref: buttonRef, style: buttonStyle } = useScroll<HTMLDivElement>(.7, .5);
     
     useEffect(() => {
-        console.log(state)
+        console.log(state);
     }, [state]);
 
     return (
         <>
             <Header />
             <S.Container>
-                <S.Title>Write down the reviews!</S.Title>
-                <S.Button>Get Started</S.Button>
+                <S.Wrapper ref={divRef} style={divStyle}>
+                    <S.Title>Write down the reviews!</S.Title>
+                    <div ref={buttonRef} style={buttonStyle}>
+                        <S.Button>Get Started</S.Button>
+                    </div>
+                </S.Wrapper>
             </S.Container>
             {
-                data.map((props) => (
-                    <Box {...props} />
+                data.map((props, i) => (
+                    <Box key={i} {...props} />
                 ))
             }
         </>

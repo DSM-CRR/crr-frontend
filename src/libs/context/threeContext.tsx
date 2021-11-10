@@ -1,7 +1,7 @@
 import React, { Dispatch, useContext, useReducer, createContext, RefObject, useEffect } from 'react';
 import Canvas from '../../components/Canvas';
 import * as THREE from 'three';
-import { Group, Mesh, Object3D, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from "three";
+import { Object3D, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import styled from 'styled-components';
 
@@ -17,7 +17,7 @@ type State = {
 type Action =
     | { type: "SET_CANVAS", payload: RefObject<HTMLCanvasElement> }
     | { type: "ADD_ANIMATION", payload: () => void }
-    | { type: "ADD_MESH", payload: Mesh | Group }
+    | { type: "ADD_MESH", payload: Object3D }
 
 type threeDispatch = Dispatch<Action>;
 
@@ -111,9 +111,6 @@ const canvas2ThreeObjects = (canvas: RefObject<HTMLCanvasElement>) => {
 }
 
 const Container = styled.div`
-    width: 100%;
-    height: 100%;
-    position: absolute;
 `;
 
 export const ThreeProvider = ({ children }: { children: React.ReactNode }) => {

@@ -8,15 +8,6 @@ const Background: FC<{}> = () => {
     useEffect(() => {
         if(!state.scene) return;
 
-        // const loader = new THREE.CubeTextureLoader();
-        // const bgTexture = loader.load([
-        //     backgroundImage,
-        //     backgroundImage,
-        //     backgroundImage,
-        //     backgroundImage,
-        //     backgroundImage,
-        //     backgroundImage,
-        // ]);
         const loader = new THREE.TextureLoader();
         const bgTexture = loader.load(backgroundImage2);
         

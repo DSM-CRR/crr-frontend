@@ -2,14 +2,13 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-
-import { ThreeProvider } from './libs/context/threeContext';
+import { BrowserRouter } from "react-router-dom"; 
 
 ReactDOM.render(
   <React.StrictMode>
-    <ThreeProvider>
+    <BrowserRouter>
       <App />
-    </ThreeProvider>
+    </BrowserRouter>
   </React.StrictMode>,
   document.getElementById('root')
 );
