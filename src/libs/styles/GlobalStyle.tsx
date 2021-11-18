@@ -23,6 +23,10 @@ const GlobalStyle = createGlobalStyle<{path: string}>`
         border: none;
         cursor: pointer;
     }
+
+    a {
+        text-decoration: none;
+    }
 `;
 
 export default GlobalStyle;

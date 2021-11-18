@@ -8,6 +8,7 @@ export const Container = styled.div`
     padding: 50px 60px;
     background: rgba(0, 0, 0, 0.7);
     border-radius: 20px;
+    user-select: none;
 `;
 
 export const Title = styled.h2`
@@ -32,13 +33,14 @@ export const Button = styled.button`
     font-weight: 700;
     font-size: 34px;
     color: white;
-    transition: background .05s linear, box-shadow .1s ease-in-out;
+    transition: background .05s linear, box-shadow .1s ease-in;
 
     &:hover {
         background: rgba(30, 24, 187, 1);
     }
 
     &:active {
+        background: rgba(30, 24, 187, 1);
         box-shadow: inset 6px 6px 10px rgba(0, 0, 0, 0.4), inset -4px -4px 9px rgba(255, 255, 255, 0.1);
     }
 `;

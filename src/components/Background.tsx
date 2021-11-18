@@ -17,7 +17,6 @@ const Background: FC<{}> = () => {
 
     return (
         <>
-            
         </>
     );
 }

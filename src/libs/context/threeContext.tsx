@@ -1,7 +1,7 @@
-import React, { Dispatch, useContext, useReducer, createContext, RefObject, useEffect } from 'react';
+import React, { Dispatch, useContext, useReducer, createContext, RefObject, useEffect, useRef } from 'react';
 import Canvas from '../../components/Canvas';
 import * as THREE from 'three';
-import { Object3D, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from "three";
+import { BufferGeometry, Line, LineBasicMaterial, Object3D, PerspectiveCamera, Scene, Vector2, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import styled from 'styled-components';
 
@@ -10,13 +10,13 @@ type State = {
     camera?: PerspectiveCamera,
     scene?: Scene,
     controls?: OrbitControls,
-    callback: (() => void)[];
+    callback: ((t: number) => void)[];
     meshes: Object3D[];
 }
 
 type Action =
     | { type: "SET_CANVAS", payload: RefObject<HTMLCanvasElement> }
-    | { type: "ADD_ANIMATION", payload: () => void }
+    | { type: "ADD_ANIMATION", payload: (t: number) => void }
     | { type: "ADD_MESH", payload: Object3D }
 
 type threeDispatch = Dispatch<Action>;
@@ -49,25 +49,12 @@ const reducer = (state: State, action: Action): State => {
     }
 }
 
-const createGridPlaneMesh = (size: number, { x, y, z }: Vector3, div?: number, pos?: "top" | "bottom") => {
-    const posValue = pos ? 
-        pos === "top" ? -1 : 1
-        : 1;
-
-    const group = new THREE.Group();
+const createGrid = (size: number, { x, y, z }: Vector3, div?: number) => {
     const grid = new THREE.GridHelper(size, div ? div : 20, 0x3AE3ED, 0x3AE3ED);
-    const plane = new THREE.Mesh(
-        new THREE.PlaneGeometry(size, size, 1),
-        new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.4})
-    );
-    plane.rotation.x = -90 * posValue * Math.PI / 180;
 
-    group.add(grid);
-    // group.add(plane);
+    grid.position.set(x, y, z);
 
-    group.position.set(x, y, z);
-
-    return group;
+    return grid;
 }
 
 const canvas2ThreeObjects = (canvas: RefObject<HTMLCanvasElement>) => {
@@ -92,14 +79,15 @@ const canvas2ThreeObjects = (canvas: RefObject<HTMLCanvasElement>) => {
     controls.enableZoom = false;
     controls.autoRotate = true;
     controls.autoRotateSpeed = 0.2;
+    controls.enableDamping = true;
 
     const light = new THREE.AmbientLight(0xffffff, 0.1);
     light.position.set(0, 0, 0);
 
     scene.fog = new THREE.Fog(0x001324, 800, 1000);
 
-    scene.add(createGridPlaneMesh(2500, new THREE.Vector3(0, -300, 0), 65));
-    scene.add(createGridPlaneMesh(2500, new THREE.Vector3(0, 300, 0), 65, "top"));
+    scene.add(createGrid(2500, new THREE.Vector3(0, -300, 0), 65));
+    scene.add(createGrid(2500, new THREE.Vector3(0, 300, 0), 65));
     scene.add(light);
 
     return {
@@ -115,22 +103,61 @@ const Container = styled.div`
 
 export const ThreeProvider = ({ children }: { children: React.ReactNode }) => {
     const [state, dispatch] = useReducer(reducer, initialState);
+    const functions = useRef<((t:number) => void)[]>([]);
 
     useEffect(() => {
-        const { callback, renderer, camera, scene, controls } = state;
+        const { renderer, camera, scene, controls } = state;
+        const raycaster = new THREE.Raycaster();
+        const mouse = new Vector2();
+        let obj: Line<BufferGeometry, LineBasicMaterial> | null;
 
-        const animate = () => {
+        raycaster.params.Line!.threshold = 1;
+
+        const onMouseMove = (e: MouseEvent) => {
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+        };
+
+        const animate = (t: number) => {
             if(renderer === undefined || scene === undefined || camera === undefined || controls === undefined) return;
 
             window.requestAnimationFrame(animate);
 
-            callback.forEach(fn => fn());
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(scene.children);
+            
+            if(obj && obj.type === "Line") obj.material = new THREE.LineBasicMaterial({ color: 0x3AE3ED })
+            if(intersects.length > 0 && obj !== intersects[0].object) {
+                obj = intersects[0].object as Line<BufferGeometry, LineBasicMaterial>;
+                if(obj && obj.type === "Line") obj.material = new THREE.LineBasicMaterial({ color: 0xffffff });
+            } else obj = null;
+
+            if(obj && intersects.length > 0 && obj.type === "Line") {
+                controls.autoRotate = false;
+                renderer.domElement.style.cursor = "pointer";
+            } else {
+                controls.autoRotate = true;
+                renderer.domElement.style.cursor = "auto";
+            }
+
+            functions.current.forEach(fn => fn(t));
             renderer.render(scene, camera);
             controls.update();
         };
 
-        window.requestAnimationFrame(animate);
-    }, [state]);
+        window.addEventListener("mousemove", onMouseMove);
+        const afHandle = window.requestAnimationFrame(animate);
+
+        return () => {
+            window.removeEventListener("mousemove", onMouseMove);
+            window.cancelAnimationFrame(afHandle);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [state.renderer]);
+
+    useEffect(() => {
+        functions.current = state.callback;
+    }, [state.callback])
 
     return (
         <ThreeStateContext.Provider value={state}>
