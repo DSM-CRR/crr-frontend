@@ -7,12 +7,15 @@ export const Container = styled.div<{height: number}>`
     left: 0;
     width: 100%;
     height: ${props => props.height}px;
-    background: white;
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+    /* background: white; */
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(4px);
+    box-shadow: 0 6px 11px rgba(0, 0, 0, 0.3);
     display: flex;
     justify-content: center;
     z-index: 10000;
     user-select: none;
+    transition: all .1s ease-in;
 `;
 
 export const Wrapper = styled.div`
@@ -21,6 +24,7 @@ export const Wrapper = styled.div`
     display: flex;
     align-items: center;
     justify-content: space-between;
+    transition: all .1s ease-in;
 `
 
 export const Logo = styled(Link)<{fontSize: number}>`
@@ -29,6 +33,7 @@ export const Logo = styled(Link)<{fontSize: number}>`
     transform: translateY(-${props => props.fontSize === 60 ? 4 : 2}px);
     cursor: pointer;
     color: black;
+    transition: all .1s ease-in;
 `;
 
 export const NavItem = styled(Link)`
@@ -36,4 +41,5 @@ export const NavItem = styled(Link)`
     font-size: 28px;
     cursor: pointer;
     color: black;
+    transition: all .1s ease-in;
 `;

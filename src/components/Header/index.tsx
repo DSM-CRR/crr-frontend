@@ -13,7 +13,7 @@ const Header: FC<{}> = () => {
         <S.Container height={location.pathname === "/" ? 80 : 64}>
             <S.Wrapper>
                 <S.Logo fontSize={location.pathname === "/" ? 60 : 46} to="/">CRR</S.Logo>
-                <S.NavItem to="/docs/1">Demo</S.NavItem>
+                <S.NavItem to="/docs/intro">Demo</S.NavItem>
             </S.Wrapper>
         </S.Container>
     );

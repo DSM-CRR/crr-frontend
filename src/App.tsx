@@ -15,15 +15,17 @@ function App() {
       <Header />
       <GlobalStyle path={location.pathname} />
       <Routes>
-        <Route path="/" element={
+        <Route index element={
           <ThreeProvider>
             <Main />
           </ThreeProvider>
         } />
-        <Route path="/docs/:page" element={
+        <Route path="docs" element={
           <Docs />
-        } 
-        />
+        } />
+        <Route path="docs/:id" element={
+          <Docs />
+        } />
         <Route path="*" element={
           <h1>404 NOT FOUND</h1>
         } />

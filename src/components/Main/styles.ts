@@ -9,6 +9,7 @@ export const Container = styled.div`
     background: rgba(0, 0, 0, 0.7);
     border-radius: 20px;
     user-select: none;
+    pointer-events: none;
 `;
 
 export const Title = styled.h2`
@@ -24,9 +25,11 @@ export const Wrapper = styled.div`
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    pointer-events: none;
 `;
 
 export const Button = styled.button`
+    pointer-events: all;
     padding: 18px 46px;
     border-radius: 6px;
     background: rgba(30, 24, 187, .7);
@@ -43,4 +46,19 @@ export const Button = styled.button`
         background: rgba(30, 24, 187, 1);
         box-shadow: inset 6px 6px 10px rgba(0, 0, 0, 0.4), inset -4px -4px 9px rgba(255, 255, 255, 0.1);
     }
+`;
+
+export const Modal = styled.div`
+    width: 250px;
+    padding: 10px;
+    border-radius: 4px;
+    box-shadow: 0 0 9px rgba(0, 0, 0, .45);
+    display: flex;
+    white-space: pre-line;
+    overflow-wrap: break-word;
+    background: white;
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
 `;

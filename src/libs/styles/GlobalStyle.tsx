@@ -27,6 +27,11 @@ const GlobalStyle = createGlobalStyle<{path: string}>`
     a {
         text-decoration: none;
     }
+
+    #root {
+        width: 100%;
+        height: 100%;
+    }
 `;
 
 export default GlobalStyle;

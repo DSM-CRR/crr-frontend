@@ -1,7 +1,7 @@
-import React, { Dispatch, useContext, useReducer, createContext, RefObject, useEffect, useRef } from 'react';
+import React, { Dispatch, useContext, useReducer, createContext, RefObject, useEffect, useRef, MutableRefObject } from 'react';
 import Canvas from '../../components/Canvas';
 import * as THREE from 'three';
-import { BufferGeometry, Line, LineBasicMaterial, Object3D, PerspectiveCamera, Scene, Vector2, Vector3, WebGLRenderer } from "three";
+import { BufferGeometry, Line, LineBasicMaterial, Mesh, Object3D, PerspectiveCamera, Scene, Vector2, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import styled from 'styled-components';
 
@@ -10,24 +10,32 @@ type State = {
     camera?: PerspectiveCamera,
     scene?: Scene,
     controls?: OrbitControls,
+    isPlay?: boolean[];
     callback: ((t: number) => void)[];
     meshes: Object3D[];
+    index: number;
+    isOver: boolean;
 }
 
 type Action =
     | { type: "SET_CANVAS", payload: RefObject<HTMLCanvasElement> }
     | { type: "ADD_ANIMATION", payload: (t: number) => void }
     | { type: "ADD_MESH", payload: Object3D }
+    | { type: "CHANGE_INDEX", payload: { isOver: boolean; index: number; }}
+    | { type: "CHANGE_OVER", payload: boolean; }
 
 type threeDispatch = Dispatch<Action>;
 
 const initialState: State = {
     callback: [],
-    meshes: []
+    meshes: [],
+    index: 0,
+    isOver: false
 };
 
 const ThreeStateContext = createContext(initialState);
 const ThreeDispatchContext = createContext<threeDispatch | null>(null);
+const ThreeRefContext = createContext<MutableRefObject<HTMLDivElement | null> | null>(null);
 
 const reducer = (state: State, action: Action): State => {
     switch(action.type) {
@@ -45,6 +53,17 @@ const reducer = (state: State, action: Action): State => {
             return {
                 ...state,
                 meshes: [...state.meshes, action.payload],
+            }
+        case "CHANGE_INDEX":
+            return {
+                ...state,
+                index: action.payload.index,
+                isOver: action.payload.isOver
+            }
+        case "CHANGE_OVER":
+            return {
+                ...state,
+                isOver: action.payload
             }
     }
 }
@@ -103,19 +122,21 @@ const Container = styled.div`
 
 export const ThreeProvider = ({ children }: { children: React.ReactNode }) => {
     const [state, dispatch] = useReducer(reducer, initialState);
+    const modalRef = useRef<HTMLDivElement | null>(null);
     const functions = useRef<((t:number) => void)[]>([]);
 
     useEffect(() => {
         const { renderer, camera, scene, controls } = state;
         const raycaster = new THREE.Raycaster();
         const mouse = new Vector2();
-        let obj: Line<BufferGeometry, LineBasicMaterial> | null;
+        // let obj: Line<BufferGeometry, LineBasicMaterial> | null;
+        let obj: Mesh<BufferGeometry, LineBasicMaterial> | null;
 
-        raycaster.params.Line!.threshold = 1;
+        raycaster.params.Line!.threshold = 0;
 
         const onMouseMove = (e: MouseEvent) => {
-            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
         };
 
         const animate = (t: number) => {
@@ -123,22 +144,40 @@ export const ThreeProvider = ({ children }: { children: React.ReactNode }) => {
 
             window.requestAnimationFrame(animate);
 
-            raycaster.setFromCamera(mouse, camera);
+            raycaster.setFromCamera(new Vector2((mouse.x  / window.innerWidth) * 2 - 1, -(mouse.y / window.innerHeight) * 2 + 1), camera);
             const intersects = raycaster.intersectObjects(scene.children);
-            
-            if(obj && obj.type === "Line") obj.material = new THREE.LineBasicMaterial({ color: 0x3AE3ED })
-            if(intersects.length > 0 && obj !== intersects[0].object) {
-                obj = intersects[0].object as Line<BufferGeometry, LineBasicMaterial>;
-                if(obj && obj.type === "Line") obj.material = new THREE.LineBasicMaterial({ color: 0xffffff });
-            } else obj = null;
 
-            if(obj && intersects.length > 0 && obj.type === "Line") {
-                controls.autoRotate = false;
-                renderer.domElement.style.cursor = "pointer";
-            } else {
+            if(intersects.length > 0 && obj !== intersects[0].object) {
+                obj = intersects[0].object as Mesh<BufferGeometry, LineBasicMaterial>;
+                if(obj && obj.name !== "") {
+                    controls.autoRotate = false;
+                    renderer.domElement.style.cursor = "pointer";
+                    if(modalRef && modalRef.current) {
+                        modalRef.current.innerHTML = "";
+                        const data = JSON.parse(`{${obj.name.split(/{/)[1]}`);
+                        dispatch({ type: "CHANGE_INDEX", payload: {
+                            index: Number(obj.name.match(/([0-9]{1,})/)![0]),
+                            isOver: true
+                        }});
+                        modalRef.current.innerHTML = `<b>Transaction ID:</b> ${data.id} <br><br> <b>Sender:</b>  ${data.from} <br><br> <b>Recipient:</b> ${data.to} <br><br> <b>Gasfee:</b> <br> ${data.gas}`;
+                        const bottomToY = window.innerHeight - mouse.y;
+                        const bottomPosi = mouse.y - modalRef.current.offsetHeight;
+                        if(bottomToY > modalRef.current.offsetHeight) modalRef.current.style.transform = `translate(${mouse.x}px, ${mouse.y}px)`;
+                        else modalRef.current.style.transform = `translate(${mouse.x}px, ${bottomPosi}px)`;
+                        modalRef.current.style.display = "inline-block";
+                    } 
+                } else {
+                    dispatch({ type: "CHANGE_OVER", payload: false });
+                    if(modalRef && modalRef.current) modalRef.current.style.display = "none";
+                    controls.autoRotate = true;
+                    renderer.domElement.style.cursor = "auto";
+                }
+            } else if(intersects.length < 1) {
+                dispatch({ type: "CHANGE_OVER", payload: false });
+                if(modalRef && modalRef.current) modalRef.current.style.display = "none";
                 controls.autoRotate = true;
                 renderer.domElement.style.cursor = "auto";
-            }
+            } else obj = null;
 
             functions.current.forEach(fn => fn(t));
             renderer.render(scene, camera);
@@ -162,10 +201,12 @@ export const ThreeProvider = ({ children }: { children: React.ReactNode }) => {
     return (
         <ThreeStateContext.Provider value={state}>
             <ThreeDispatchContext.Provider value={dispatch}>
-                <Canvas />
-                <Container>
-                    {children}
-                </Container>
+                <ThreeRefContext.Provider value={modalRef}>
+                    <Canvas />
+                    <Container>
+                        {children}
+                    </Container>
+                </ThreeRefContext.Provider>
             </ThreeDispatchContext.Provider>
         </ThreeStateContext.Provider>
     )
@@ -181,4 +222,10 @@ export const useThreeDispatch = () => {
     const dispatch = useContext(ThreeDispatchContext);
     if(!dispatch) throw new Error("Cannot find ThreeProvider");
     return dispatch;
+}
+
+export const useThreeRef = () => {
+    const state = useContext(ThreeRefContext);
+    if(!state) throw new Error("Cannot find ThreeProvider");
+    return state;
 }
