@@ -85,7 +85,7 @@ export const DocsForm = styled.form`
 export const DocsInput = styled.input<{width?: number}>`
     width: ${({ width }) => width ? width : 90}%;
     outline: none;
-    border: 1px solid rgb(50, 50, 50);
+    border: 1px solid rgb(130, 130, 130);
     background: rgb(250, 250, 250);
     border-radius: 2px;
     padding: 4px 8px;
@@ -94,7 +94,7 @@ export const DocsInput = styled.input<{width?: number}>`
 export const DocsText = styled.textarea`
     width: 90%;
     outline: none;
-    border: 1px solid rgb(50, 50, 50);
+    border: 1px solid rgb(130, 130, 130);
     background: rgb(250, 250, 250);
     border-radius: 2px;
     padding: 4px 8px;

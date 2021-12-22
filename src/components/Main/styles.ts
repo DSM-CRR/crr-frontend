@@ -16,6 +16,7 @@ export const Title = styled.h2`
     font-weight: 900;
     font-size: 64px;
     color: white;
+    text-align: center;
 `;
 
 export const Wrapper = styled.div`
